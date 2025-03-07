@@ -39,7 +39,7 @@ public class CreateProductCommandHandlerTests
         var product = new Product(command.Name, new Price(command.Price), new Stock(command.Stock));
         
         _mockRepository.Setup(r => r.AddAsync(It.IsAny<Product>()))
-            .Callback<Product>(p => p.GetType().GetProperty("Id")?.SetValue(p, 1)) // ✅ Set ID
+            .Callback<Product>(p => p.GetType().GetProperty("Id")?.SetValue(p, 1))
             .Returns(Task.CompletedTask);
 
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).Returns(Task.CompletedTask);
