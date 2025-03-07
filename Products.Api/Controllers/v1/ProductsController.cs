@@ -17,12 +17,17 @@ public class ProductsController : ControllerBase
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllProducts()
+    {
+        _logger.LogInformation("Fetching all products");
+
+        var products = await _mediator.Send(new GetAllProductsQuery());
+        return Ok(products);
+    }
     
-    /// <summary>
-    /// Retrieves a product by its ID.
-    /// </summary>
-    /// <param name="id">The product ID.</param>
-    /// <returns>The product if found; otherwise, 404 Not Found.</returns>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetProductById(int id)
     {
@@ -39,10 +44,6 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
     
-    /// <summary>
-    /// Creates a new product.
-    /// </summary>
-    /// <param name="command">The product creation request.</param>
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
     {
@@ -58,5 +59,29 @@ public class ProductsController : ControllerBase
         var product = await _mediator.Send(new GetProductByIdQuery { Id = productId });
 
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, product);
+    }
+    
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductCommand command)
+    {
+        if (id != command.Id)
+        {
+            _logger.LogWarning("Product update failed: ID in request does not match route ID.");
+            return BadRequest(new { Message = "ID in request does not match route ID" });
+        }
+
+        _logger.LogInformation("Updating product with ID {ProductId}: {@Command}", id, command);
+
+        await _mediator.Send(command);
+        return NoContent();
+    }
+    
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        _logger.LogInformation("Deleting product with ID {ProductId}", id);
+
+        await _mediator.Send(new DeleteProductCommand { Id = id });
+        return NoContent();
     }
 }
