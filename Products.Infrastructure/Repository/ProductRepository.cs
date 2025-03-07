@@ -14,6 +14,13 @@ public class ProductRepository : IProductRepository
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
     
+    public async Task<IEnumerable<Product>> GetAllAsync()
+    {
+        return await _context.Products
+            .AsNoTracking()
+            .ToListAsync();
+    }
+    
     public async Task<Product?> GetByIdAsync(int id)
     {
         return await _context.Products
@@ -26,5 +33,23 @@ public class ProductRepository : IProductRepository
         if (product == null) throw new ArgumentNullException(nameof(product));
 
         await _context.Products.AddAsync(product);
+    }
+    
+    public async Task UpdateAsync(Product product)
+    {
+        if (product == null) throw new ArgumentNullException(nameof(product));
+
+        _context.Products.Update(product);
+    }
+    
+    public async Task DeleteAsync(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            throw new KeyNotFoundException($"Product with ID {id} not found.");
+        }
+
+        _context.Products.Remove(product);
     }
 }
