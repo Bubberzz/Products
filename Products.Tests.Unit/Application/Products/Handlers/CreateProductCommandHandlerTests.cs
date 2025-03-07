@@ -8,7 +8,7 @@ using Products.Domain.Entities;
 using Products.Domain.Interfaces;
 using Products.Domain.ValueObjects;
 
-namespace Products.Tests.Unit.Application;
+namespace Products.Tests.Unit.Application.Products.Handlers;
 
 public class CreateProductCommandHandlerTests
 {

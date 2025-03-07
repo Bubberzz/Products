@@ -3,6 +3,7 @@ using Products.Application.Products.Queries;
 using Products.Application.Products.Responses;
 using Products.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using Products.Domain.Exceptions;
 
 namespace Products.Application.Products.Handlers;
 
@@ -25,7 +26,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
         if (product == null)
         {
             _logger.LogWarning("Product with ID {Id} not found.", request.Id);
-            return null;
+            throw new NotFoundException($"Product with ID {request.Id} not found.");
         }
 
         return new ProductResponse
