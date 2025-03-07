@@ -4,6 +4,8 @@ public record Stock
 {
     public int Value { get; }
 
+    private Stock() { }
+    
     public Stock(int value)
     {
         if (value < 0)
