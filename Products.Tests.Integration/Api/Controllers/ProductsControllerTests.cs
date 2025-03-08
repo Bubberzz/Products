@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Products.Application.Products.Commands;
 using Products.Application.Products.Responses;
+using Products.Domain.ValueObjects;
 
 namespace Products.Tests.Integration.Api.Controllers;
 
@@ -69,7 +70,7 @@ public class ProductsControllerTests : IClassFixture<CustomWebApplicationFactory
         var createResponse = await _client.PostAsJsonAsync("/api/v1/products", product);
         var createdProduct = await createResponse.Content.ReadFromJsonAsync<ProductResponse>();
 
-        var updateCommand = new UpdateProductCommand { Id = createdProduct.Id, Name = "Updated Name", Price = 30.00m, Stock = 20 };
+        var updateCommand = new UpdateProductCommand { Id = new ProductId(createdProduct.Id), Name = "Updated Name", Price = 30.00m, Stock = 20 };
         var response = await _client.PutAsJsonAsync($"/api/v1/products/{createdProduct.Id}", updateCommand);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);

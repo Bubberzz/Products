@@ -22,7 +22,7 @@ public class GetAllProductsQueryHandlerTests
         _mockMapper = new Mock<IMapper>();
 
         _handler = new GetAllProductsQueryHandler(
-            _mockRepository.Object, 
+            _mockRepository.Object,
             _mockMapper.Object);
     }
 
@@ -31,14 +31,14 @@ public class GetAllProductsQueryHandlerTests
     {
         var products = new List<Product>
         {
-            new("Product 1", new Price(10.5m), new Stock(5)) { Id = 1 },
-            new("Product 2", new Price(15m), new Stock(10)) { Id = 2 }
+            new(ProductId.New(), "Product 1", new Price(10.5m), new Stock(5)),
+            new(ProductId.New(), "Product 2", new Price(15m), new Stock(10))
         };
 
         var productResponses = new List<ProductResponse>
         {
-            new() { Id = 1, Name = "Product 1", Price = 10.5m, Stock = 5 },
-            new() { Id = 2, Name = "Product 2", Price = 15m, Stock = 10 }
+            new() { Id = products[0].Id.Value, Name = "Product 1", Price = 10.5m, Stock = 5 },
+            new() { Id = products[1].Id.Value, Name = "Product 2", Price = 15m, Stock = 10 }
         };
 
         _mockRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(products);

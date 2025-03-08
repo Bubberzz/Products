@@ -1,8 +1,10 @@
 using Asp.Versioning;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Products.Api.Middleware;
 using Products.Application;
 using Products.Infrastructure;
+using Products.Infrastructure.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,26 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        context.Database.Migrate();
+
+        await AppDbContextSeed.SeedAsync(context, logger);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

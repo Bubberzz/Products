@@ -1,15 +1,16 @@
 using Products.Domain.Shared;
+using Products.Domain.ValueObjects;
 
 namespace Products.Domain.Events;
 
 public class ProductUpdatedEvent : BaseEvent
 {
-    public int ProductId { get; }
+    public ProductId ProductId { get; }
     public string Name { get; }
-    public decimal Price { get; }
-    public int Stock { get; }
+    public Price Price { get; }
+    public Stock Stock { get; }
 
-    public ProductUpdatedEvent(int productId, string name, decimal price, int stock)
+    public ProductUpdatedEvent(ProductId productId, string name, Price price, Stock stock)
     {
         ProductId = productId;
         Name = name;

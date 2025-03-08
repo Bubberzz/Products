@@ -20,8 +20,9 @@ public static class ConfigureServices
         }
         else
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(connectionString));
         }
 
         services.AddScoped<IProductRepository, ProductRepository>();

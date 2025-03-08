@@ -1,8 +1,9 @@
 using MediatR;
+using Products.Domain.ValueObjects;
 
 namespace Products.Application.Products.Commands;
 
 public class DeleteProductCommand : IRequest
 {
-    public int Id { get; set; }
+    public ProductId Id { get; set; }
 }

@@ -8,7 +8,7 @@ using Products.Domain.ValueObjects;
 
 namespace Products.Application.Products.Handlers;
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, int>
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ProductId>
 {
     private readonly IProductRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -27,11 +27,13 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<ProductId> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating product: {@Request}", request);
+        _logger.LogInformation("Creating product: Name: {Name}, Price: {Price}, Stock: {Stock}", 
+            request.Name, request.Price, request.Stock);
 
         var product = new Product(
+            ProductId.New(),
             request.Name,
             new Price(request.Price),
             new Stock(request.Stock)
@@ -39,9 +41,9 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         await _repository.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
-        await _mediator.Publish(new ProductCreatedEvent(product.Id, product.Name, product.Price.Value, product.Stock.Value), cancellationToken);
+        await _mediator.Publish(new ProductCreatedEvent(product.Id, product.Name, product.Price, product.Stock), cancellationToken);
 
-        _logger.LogInformation("Product created successfully: {ProductId}", product.Id);
+        _logger.LogInformation("Product created successfully: {ProductId}", product.Id.Value);
         return product.Id;
     }
 }

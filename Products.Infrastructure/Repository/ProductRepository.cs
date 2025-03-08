@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Products.Domain.Entities;
 using Products.Domain.Interfaces;
+using Products.Domain.ValueObjects;
 using Products.Infrastructure.Context;
 
 namespace Products.Infrastructure.Repository;
@@ -21,7 +22,7 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
     
-    public async Task<Product?> GetByIdAsync(int id)
+    public async Task<Product?> GetByIdAsync(ProductId id)
     {
         return await _context.Products
             .AsNoTracking()
@@ -42,12 +43,12 @@ public class ProductRepository : IProductRepository
         _context.Products.Update(product);
     }
     
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(ProductId id)
     {
         var product = await _context.Products.FindAsync(id);
         if (product == null)
         {
-            throw new KeyNotFoundException($"Product with ID {id} not found.");
+            throw new KeyNotFoundException($"Product with ID {id.Value} not found.");
         }
 
         _context.Products.Remove(product);

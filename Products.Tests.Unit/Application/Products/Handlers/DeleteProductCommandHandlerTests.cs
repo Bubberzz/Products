@@ -7,6 +7,7 @@ using Products.Domain.Exceptions;
 using Products.Domain.Interfaces;
 using Products.Domain.ValueObjects;
 using MediatR;
+using FluentAssertions;
 
 namespace Products.Tests.Unit.Application.Products.Handlers;
 
@@ -35,15 +36,17 @@ public class DeleteProductCommandHandlerTests
     [Fact]
     public async Task Handle_ProductExists_DeletesProduct()
     {
-        var product = new Product("Test Product", new Price(10.5m), new Stock(5)) { Id = 1 };
-        var command = new DeleteProductCommand { Id = 1 };
+        var productId = ProductId.New();
+        var product = new Product(productId, "Test Product", new Price(10.5m), new Stock(5));
 
-        _mockRepository.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(product);
+        var command = new DeleteProductCommand { Id = productId };
+
+        _mockRepository.Setup(repo => repo.GetByIdAsync(productId)).ReturnsAsync(product);
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).Returns(Task.CompletedTask);
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _mockRepository.Verify(repo => repo.DeleteAsync(1), Times.Once);
+        _mockRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
         _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
         _mockMediator.Verify(m => m.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -51,11 +54,15 @@ public class DeleteProductCommandHandlerTests
     [Fact]
     public async Task Handle_ProductDoesNotExist_ThrowsNotFoundException()
     {
-        var command = new DeleteProductCommand { Id = 1 };
-        _mockRepository.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((Product?)null);
+        var productId = ProductId.New();
+        var command = new DeleteProductCommand { Id = productId };
+
+        _mockRepository.Setup(repo => repo.GetByIdAsync(productId)).ReturnsAsync((Product?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(command, CancellationToken.None));
 
+        _mockRepository.Verify(repo => repo.GetByIdAsync(productId), Times.Once);
+        _mockRepository.Verify(repo => repo.DeleteAsync(It.IsAny<ProductId>()), Times.Never);
         _mockMediator.Verify(m => m.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

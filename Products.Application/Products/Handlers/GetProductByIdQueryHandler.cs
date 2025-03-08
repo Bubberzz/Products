@@ -31,7 +31,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
 
         return new ProductResponse
         {
-            Id = product.Id,
+            Id = product.Id.Value,
             Name = product.Name,
             Price = product.Price.Value,
             Stock = product.Stock.Value

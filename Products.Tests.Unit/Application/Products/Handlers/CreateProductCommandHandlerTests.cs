@@ -33,21 +33,22 @@ public class CreateProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Should_CreateProduct_And_Return_Id()
+    public async Task Handle_Should_CreateProduct_And_Return_ProductId()
     {
         var command = new CreateProductCommand { Name = "Test Product", Price = 10.5m, Stock = 5 };
-        var product = new Product(command.Name, new Price(command.Price), new Stock(command.Stock));
+        var productId = ProductId.New();
+        var product = new Product(productId, command.Name, new Price(command.Price), new Stock(command.Stock));
         
         _mockRepository.Setup(r => r.AddAsync(It.IsAny<Product>()))
-            .Callback<Product>(p => p.GetType().GetProperty("Id")?.SetValue(p, 1))
+            .Callback<Product>(p => p.GetType().GetProperty("Id")?.SetValue(p, productId))
             .Returns(Task.CompletedTask);
 
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).Returns(Task.CompletedTask);
         
         var result = await _handler.Handle(command, CancellationToken.None);
         
-        result.Should().BeGreaterThan(0);
-        result.Should().Be(1);
+        result.Should().NotBeNull();
+        result.Should().Be(productId);
         _mockRepository.Verify(r => r.AddAsync(It.IsAny<Product>()), Times.Once);
         _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }

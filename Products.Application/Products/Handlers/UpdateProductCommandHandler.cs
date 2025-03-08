@@ -45,8 +45,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
             new ProductUpdatedEvent(
                 product.Id, 
                 product.Name, 
-                product.Price.Value,
-                product.Stock.Value 
+                product.Price,
+                product.Stock 
             ), cancellationToken);
     }
 }

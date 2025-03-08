@@ -26,11 +26,8 @@ public class GetProductByIdQueryHandlerTests
     [Fact]
     public async Task Handle_ProductExists_ReturnsProductResponse()
     {
-        var productId = 1;
-        var product = new Product("Test Product", new Price(100), new Stock(50))
-        {
-            Id = productId
-        };
+        var productId = ProductId.New();
+        var product = new Product(productId, "Test Product", new Price(100), new Stock(50));
 
         _repositoryMock.Setup(repo => repo.GetByIdAsync(productId))
             .ReturnsAsync(product);
@@ -39,7 +36,7 @@ public class GetProductByIdQueryHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.Should().NotBeNull();
-        result.Id.Should().Be(product.Id);
+        result.Id.Should().Be(product.Id.Value);
         result.Name.Should().Be(product.Name);
         result.Price.Should().Be(product.Price.Value);
         result.Stock.Should().Be(product.Stock.Value);
@@ -50,14 +47,14 @@ public class GetProductByIdQueryHandlerTests
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Fetching product with ID")),
             It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()!
-        ), Times.Once);
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 
     [Fact]
     public async Task Handle_ProductDoesNotExist_ThrowsNotFoundException()
     {
-        var productId = 1;
+        var productId = ProductId.New();
 
         _repositoryMock.Setup(repo => repo.GetByIdAsync(productId))
             .ReturnsAsync((Product?)null);
@@ -73,7 +70,7 @@ public class GetProductByIdQueryHandlerTests
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Product with ID")),
             It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()!
-        ), Times.Once);
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 }

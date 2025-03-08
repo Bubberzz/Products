@@ -6,7 +6,7 @@ namespace Products.Domain.Entities;
 
 public class Product : IAggregateRoot
 {
-    public int Id { get; init; }
+    public ProductId Id { get; init; }
 
     [JsonPropertyName("name")]
     public string Name { get; private set; } = string.Empty;
@@ -16,8 +16,9 @@ public class Product : IAggregateRoot
     
     private Product() { }
     
-    public Product(string name, Price price, Stock stock)
+    public Product(ProductId id, string name, Price price, Stock stock)
     {
+        Id = id ?? throw new ArgumentNullException(nameof(id));
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Price = price ?? throw new ArgumentNullException(nameof(price));
         Stock = stock ?? throw new ArgumentNullException(nameof(stock));

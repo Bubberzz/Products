@@ -8,13 +8,11 @@ public class GlobalExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
-    private readonly IWebHostEnvironment _env;
 
-    public GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlingMiddleware> logger, IWebHostEnvironment env)
+    public GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlingMiddleware> logger)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _env = env ?? throw new ArgumentNullException(nameof(env));
     }
 
     public async Task Invoke(HttpContext context)
@@ -25,21 +23,25 @@ public class GlobalExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception in request {TraceId}: {Message}", context.TraceIdentifier, ex.Message);
+            _logger.LogError(ex, "Unhandled exception occurred. TraceId: {TraceId}", context.TraceIdentifier);
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        int statusCode = (int)HttpStatusCode.InternalServerError;
-        string message = "An unexpected error occurred. Please try again later.";
+        int statusCode;
+        string message;
 
         if (exception is AppException appException)
         {
-            // 🔹 Handle known custom exceptions
             statusCode = appException.StatusCode;
             message = appException.Message;
+        }
+        else
+        {
+            statusCode = (int)HttpStatusCode.InternalServerError;
+            message = "An unexpected error occurred. Please try again later.";
         }
 
         var response = new
@@ -48,10 +50,13 @@ public class GlobalExceptionHandlingMiddleware
             TraceId = context.TraceIdentifier
         };
 
-        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
+
+        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 
         return context.Response.WriteAsync(json);
     }

@@ -1,12 +1,13 @@
 using Products.Domain.Shared;
+using Products.Domain.ValueObjects;
 
 namespace Products.Domain.Events;
 
 public class ProductDeletedEvent : BaseEvent
 {
-    public int ProductId { get; }
+    public ProductId ProductId { get; }
 
-    public ProductDeletedEvent(int productId)
+    public ProductDeletedEvent(ProductId productId)
     {
         ProductId = productId;
     }
